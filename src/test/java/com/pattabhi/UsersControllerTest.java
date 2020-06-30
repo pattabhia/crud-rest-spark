@@ -67,7 +67,6 @@ public class UsersControllerTest {
         users.add(user);
 
         when(userJpaRespository.findAll()).thenReturn(users);
-
         MvcResult result = mockMvc.perform(get("/api/users/all")).andExpect(status().isOk()).andReturn();
         JSONAssert.assertEquals(new ObjectMapper().writeValueAsString(users),
                 result.getResponse().getContentAsString(), false);
@@ -85,7 +84,6 @@ public class UsersControllerTest {
     public void findUserByNameWithWrongEmailTest() throws Exception {
         when(userJpaRespository.findByEmail(user.getEmail())).thenReturn(user);
         MvcResult result = mockMvc.perform(get("/api/users/{email}", "rohit@test.com")).andExpect(status().isOk()).andReturn();
-        System.out.println(":::::" + result.getResponse().getContentAsString());
         assertThat(result.getResponse().getContentAsString().length(), is(0));
     }
 

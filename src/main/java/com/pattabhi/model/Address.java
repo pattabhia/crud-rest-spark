@@ -1,13 +1,17 @@
 package com.pattabhi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 
 @Entity
 @Table(name = "address")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Address {
 
     @Id
-    @Column (name="address_email")
+    @JsonIgnore
     private String email;
 
     private String city;
@@ -18,6 +22,7 @@ public class Address {
     private String addressText;
 
     @OneToOne(mappedBy = "address")
+    @JsonIgnore
     private User user;
 
     public Address() {
