@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/")
+@RequestMapping("/api/users")
 public class UsersController {
 
 	/** The JPA repository */
@@ -26,15 +26,26 @@ public class UsersController {
         return userJpaRespository.findAll();
     }
 
-    /**
+ /*   *//**
 	 * Used to find and return a user by name
 	 * 
 	 * @param name refers to the name of the user
 	 * @return {@link User} object
-	 */
+	 *//*
     @GetMapping(value = "/{name}")
     public User findByName(@PathVariable final String name){
         return userJpaRespository.findByName(name);
+    }*/
+
+    /**
+     * Used to find and return a user by email
+     *
+     * @param email refers to the name of the user
+     * @return {@link User} object
+     */
+    @GetMapping(value = "/{email}")
+    public User findByEmail(@PathVariable final String email){
+        return userJpaRespository.findByEmail(email);
     }
 
     /**
@@ -44,11 +55,11 @@ public class UsersController {
 	 * @return the {@link User} created
 	 */
     @PostMapping(value = "/load")
-    public User load(@RequestBody final User users) throws UserExistException {
-        if(userJpaRespository.exists(users.getEmail())) {
+    public User load(@RequestBody final User users) {
+        /*if(userJpaRespository.exists(users.getEmail())) {
             throw new UserExistException("User already exists with email = "+ users.getEmail());
-        }
+        }*/
         userJpaRespository.save(users);
-        return userJpaRespository.findByName(users.getEmail());
+        return userJpaRespository.findByEmail(users.getEmail());
     }
 }
