@@ -12,6 +12,7 @@ public class Address {
 
     @Id
     @JsonIgnore
+    @Column(name="email")
     private String email;
 
     private String city;
