@@ -1,25 +1,30 @@
 package com.pattabhi.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
 
     @Id
-    @Column(name="email")
+    @Column(name = "user_email")
     private String email;
 
-    @Column(name="name")
+    @Column(name = "name")
     private String name;
 
-    @Column(name="DOB")
+    @Column(name = "DOB")
     private String dateOfBirth;
 
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY, optional = false)
+    @MapsId
+    private Address address;
+
+    public User() {
+
+    }
 
     public String getEmail() {
         return email;
@@ -43,5 +48,13 @@ public class User implements Serializable {
 
     public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }
