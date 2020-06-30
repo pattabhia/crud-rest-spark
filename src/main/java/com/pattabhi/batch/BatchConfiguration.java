@@ -1,5 +1,6 @@
 package com.pattabhi.batch;
 
+import com.pattabhi.model.Address;
 import com.pattabhi.model.User;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -12,6 +13,7 @@ import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
 import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -40,7 +42,13 @@ public class BatchConfiguration {
     @Autowired
     private SimpleJobLauncher jobLauncher;
 
-    @Scheduled(cron = "*/10 * * * * ?")
+    @Value("${output.file.path}")
+    private String extractionFilePath;
+
+    @Value("${cron.scheduler}")
+    private String cronScheduler;
+
+    @Scheduled(cron = "${cron.scheduler}")
     public void extractUserDetails() throws Exception
     {
         System.out.println(" Job Started at :"+ new Date());
@@ -50,21 +58,11 @@ public class BatchConfiguration {
         System.out.println("Job finished with status :" + execution.getStatus());
     }
 
-   /* @Bean
-    public DataSource dataSource() {
-        final DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:testdb");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("");
-        return dataSource;
-    }*/
-
     @Bean
     public JdbcCursorItemReader<User> reader() {
         JdbcCursorItemReader<User> reader = new JdbcCursorItemReader<User>();
         reader.setDataSource(dataSource);
-        reader.setSql("SELECT ADDRESS_EMAIL,NAME FROM users");
+        reader.setSql("select U.NAME name, U.DATE_OF_BIRTH dob, U.ADDRESS_EMAIL email,A.CITY city ,A.PINCODE pincode FROM USERS as U,ADDRESS A WHERE U.ADDRESS_EMAIL=A.EMAIL");
         reader.setRowMapper(new UserRowMapper());
         return reader;
     }
@@ -74,8 +72,13 @@ public class BatchConfiguration {
         @Override
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
             User user = new User();
-            user.setEmail(rs.getString("ADDRESS_EMAIL"));
-            user.setName(rs.getString("NAME"));
+            user.setName(rs.getString("name"));
+            user.setDateOfBirth(rs.getString("dob"));
+            user.setEmail(rs.getString("email"));
+            Address address = new Address();
+            address.setCity(rs.getString("city"));
+            address.setPincode(rs.getString("pincode"));
+            user.setAddress(address);
             return user;
         }
 
@@ -89,13 +92,13 @@ public class BatchConfiguration {
     @Bean
     public FlatFileItemWriter<User> writer() {
         FlatFileItemWriter<User> writer = new FlatFileItemWriter<>();
-        Resource resource = new FileSystemResource("C:\\mylab\\crud-rest-spark\\outputData.csv");
+        Resource resource = new FileSystemResource(this.extractionFilePath);
         writer.setResource(resource);
         writer.setAppendAllowed(true);
         writer.setLineAggregator(new DelimitedLineAggregator<User>() {{
             setDelimiter(",");
             setFieldExtractor(new BeanWrapperFieldExtractor<User>() {{
-                setNames(new String[]{"email", "name"});
+                setNames(new String[]{"name", "dateOfBirth","email","address.city","address.pincode"});
             }});
         }});
 

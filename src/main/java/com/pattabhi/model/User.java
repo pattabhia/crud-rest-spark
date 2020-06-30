@@ -13,7 +13,6 @@ import java.util.Objects;
 public class User implements Serializable {
 
     @Id
-    @Column(name="email")
     private String email;
 
     private String name;
