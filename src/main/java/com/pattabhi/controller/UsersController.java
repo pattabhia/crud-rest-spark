@@ -27,7 +27,7 @@ public class UsersController {
      *
      * @return list of {@link User}
      */
-    @GetMapping(value = "/all",consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/all")
     public List<User> findAll() {
         return userJpaRespository.findAll();
     }
@@ -62,20 +62,20 @@ public class UsersController {
      * @return the {@link User} created
      */
     @PostMapping(value = "/load", consumes = MediaType.APPLICATION_JSON_VALUE,produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<User> load(@RequestBody final User users) {
-        ResponseEntity<User> responseEntity = null;
+    public User load(@RequestBody final User users) {
+        User savedUser = null;
         try {
             if (userJpaRespository.exists(users.getEmail())) {
                 throw new UserAlreadyExistException("User already exists with email = " + users.getEmail());
             }
             users.getAddress().setEmail(users.getEmail());
-            User savedUser = userJpaRespository.save(users);
-            responseEntity = new ResponseEntity<>(savedUser, HttpStatus.ACCEPTED);
+            savedUser = userJpaRespository.save(users);
         } catch (UserAlreadyExistException e) {
-            responseEntity = new ResponseEntity<>(new UserStatus(userJpaRespository.findByEmail(users.getEmail()),e.getMessage()), HttpStatus.BAD_REQUEST);
+            User user = userJpaRespository.findByEmail(users.getEmail());
+           return new UserStatus(user,e.getMessage());
         }  catch (Exception e) {
-            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new UserStatus(new User(),HttpStatus.INTERNAL_SERVER_ERROR.toString());
         }
-        return responseEntity;
+        return savedUser;
     }
 }
